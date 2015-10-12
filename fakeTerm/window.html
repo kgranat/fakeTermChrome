@@ -11,7 +11,8 @@
     <title>InterbotiX Chrome DYNAmanaager</title>
     
     <style type="text/css">
-      canvas { border: 1px solid black; }
+      body {     -webkit-user-select: text; }
+
     </style>
     
     
@@ -21,20 +22,42 @@
 <body >
 		
 		<div id="header" style="width:100%;">
-			<img src="trLogo3.png" id="trLogo" />
+
 				<h1 style="display:inline;">
-					InterbotiX Chrome DYNAmanaager
+					FauxTerm
 				</h1>
 		</div>
 		
-		<div id="setup" style="    ">
+		<div id="app" style="    ">
 			<hr />
 			 
-			<div class="row">
+			<div class="row" id="setup">
 				<div class="small-1 columns">
 					<select name="port-selection" id="port-selection">
 					</select>
 				</div>
+
+
+				<div class="small-1 columns">
+					<select name="baud-selection" id="baud-selection">
+
+						<option value="300">300</option>
+						<option value="1200">1200</option>
+						<option value="2400">2400</option>
+						<option value="4800">4800</option>
+						<option value="9600">9600</option>
+						<option value="14400">14400</option>
+						<option value="19200">19200</option>
+						<option value="28800">28800</option>
+						<option value="38400">38400</option>
+						<option value="57600">57600</option>
+						<option value="115200">115200</option>
+						<option value="1000000">1000000</option>
+						
+					</select>
+				</div>
+
+
 				
 				<div class="small-1 columns">
 					<button id="port-connect" class="button secondary small expand">
@@ -43,8 +66,8 @@
 				</div>
 				
 				<div class="small-1 columns">
-					<button id="startScan" class="button secondary small expand">
-						Start Scan
+					<button id="sendData" class="button secondary small expand">
+						Send
 					</button>
 				</div>
 				
@@ -59,38 +82,43 @@
 						Clear Canvas
 					</button>
 				
-				
-				</div>
-			</div>
-			<!--
-			<div class="row">
-				<div class="small-1 columns">
-					X Center <input type="range" id = "xcenterRange" name="xcenterRange" value = "500" min ="0" max="1000">
+
+					Data In
+					<select name="dataIn" id="dataIn">
+
+						<option value="0">ASCII</option>
+						<option value="1">Decimal</option>
+						<option value="2">HEX</option>
+
+						
 					</select>
-					<br />
-										Y Center <input type="range" id = "ycenterRange" name="ycenterRange" value = "500" min ="0" max="1000">
 
-				</div>
-				
-				<div class="small-1 columns">
-										Draw Lines <input type="checkbox" name="drawLines" id="drawLines" checked>
-					<br />
-											Clear On Sweep <input type="checkbox" name="clearOnSweep" id="clearOnSweep" >
+					<input type="checkbox" name="convertInput" id="convertInput" value="1" checked>Convert Input<br>
 
 
-				</div>
-				<div class="small-1 columns">
-						Servo Speed<input type="range" name="servoSpeed" id="servoSpeed" value = "64" min ="1" max="1023">
+					
+					Data Out
+					<select name="dataOut" id="dataOut">
+
+						<option value="0">ASCII</option>
+						<option value="1">Decimal</option>
+						<option value="2">HEX</option>
+
 						
-						
-				</div>
-				<div class="small-1 columns">
-					Max Distance(cm) <input type="text" name="maxDistance" id="maxDistance" value="1000">
+					</select>
 				</div>
 			</div>
-			-->
-			
-			<div class="row" style="display:block;">
+
+
+			<div style="overflow:scroll;border:10px black solid;" id = "mainConsole"></div>
+
+			<div id="input">
+
+				<label class="control-label" for="serialOut" id="serialOutLabel">Input</label>
+				<input type="text" id="serialOut" value="1" >
+			</div>
+
+			<div class="row" style="display:block;" id="packetContainer">
 				<h1>Packet Last Sent:</h1>
 				<span id="packet"></span>
 			
@@ -181,14 +209,8 @@
 		-->
 		
 
-			<div id="toggle">
-				<p>
-					<a  id="setupPanelLink" >Show/Hide Setup Panel</a>
-					<br />
-					See <a href="">here</a> for more information on using this Application and programming your board and using this Application.
 
-				</p>
-			</div>
+
 			
 	<!--end full container -->
 		<script src="app.js"></script>

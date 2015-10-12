@@ -4,6 +4,7 @@
 
     // A collection of the GUI elements
     this.port      = document.getElementById('port-selection');
+    this.baudSelection     = document.getElementById('baud-selection');
     this.connect   = document.getElementById('port-connect');
     this.setupPanelLink   = document.getElementById('setupPanelLink');
     
@@ -13,8 +14,18 @@
     this.startSweep = document.getElementById('startSweep');
     this.servoSpeed = document.getElementById('servoSpeed');
     
+    this.sendDataButton = document.getElementById('sendData');
+
+    this.dataInSelection = document.getElementById('dataIn');
+    this.mainConsole = document.getElementById('mainConsole');
+
+    this.dataOutSelection = document.getElementById('dataOut');
+    this.convertInput = document.getElementById('convertInput');
     
+    this.buadRate = document.getElementById('baud-selection').value;
     
+
+
     this.xcenterRange = document.getElementById('xcenterRange');
     this.idnumber      = document.getElementById('idnumber');
     this.sendPacket      = document.getElementById('sendPacket');
@@ -42,6 +53,7 @@
     this.connected = false;
     
 
+    this.singleBuffer = new Uint8Array(1);
 
     this.buffer = new Uint8Array(9);
 
@@ -52,7 +64,8 @@
 //     this.myTimer();
 
 
-
+	this.dataInType = 0;//ascii
+	this.dataOutType = 0;//ascii
 
 
     
@@ -67,7 +80,7 @@
 
   CTC.ArduinoConnection = 
   {
-    bitrate:    115200,
+    bitrate:    this.buadRate,
     dataBits:   "eight",
     parityBit:  "no",
     stopBits:   "one"
@@ -88,8 +101,8 @@
     // Ask Chrome to find any serial devices
     getDevices(function (ports) {
 
-      // Go through each device
-      ports.forEach(function (port) {
+      // Go through each device, last to first, since the last port will probably be the latest added
+      ports.reverse().forEach(function (port) {
 
         // Create a new option element
         var option = document.createElement('option');
@@ -128,6 +141,94 @@
 //   };
 
 
+	CTC.prototype.sendAscii= function(byteVal)
+	{
+		var serialOutString = document.getElementById('serialOut').value;
+			//console.log(serialOutString);
+		var serialOutArray = serialOutString.split("");
+			//console.log(serialOutArray[0]);
+		var bufferOut = new Uint8Array(serialOutArray.length);
+
+		for(j = 0; j <serialOutArray.length; j++)
+		{
+
+			bufferOut[j] = serialOutArray[j].charCodeAt();
+
+			//console.log(bufferOut[j]);
+		}
+	 		this.transmit(bufferOut);
+
+
+	}
+	
+
+	CTC.prototype.sendDecimal= function(byteVal)
+	{
+		var serialOutString = document.getElementById('serialOut').value;
+			//console.log(serialOutString);
+		var serialOutArray = serialOutString.split(" ");
+			//console.log(serialOutArray[0]);
+		var bufferOut = new Uint8Array(serialOutArray.length);
+
+		for(j = 0; j <serialOutArray.length; j++)
+		{
+
+			bufferOut[j] = parseInt(serialOutArray[j]);
+
+			//console.log(bufferOut[j]);
+		}
+	 		this.transmit(bufferOut);
+	}
+	
+
+	CTC.prototype.sendHex= function(byteVal)
+	{
+	 	var serialOutString = document.getElementById('serialOut').value;
+			//console.log(serialOutString);
+		var serialOutArray = serialOutString.split(" ");
+			//console.log(serialOutArray[0]);
+		var bufferOut = new Uint8Array(serialOutArray.length);
+
+		for(j = 0; j <serialOutArray.length; j++)
+		{
+			var tempBuffer;
+			tempBuffer = serialOutArray[j].replace("0x", "");
+			tempBuffer = tempBuffer.replace("0X", "");
+
+			tempBuffer = "0x" + tempBuffer;
+
+			bufferOut[j] = parseInt(tempBuffer);
+
+			//console.log(bufferOut[j]);
+		}
+	 		this.transmit(bufferOut);
+
+	}
+
+
+
+	CTC.prototype.sendByte= function(byteVal)
+	{
+
+		var serialOutString = document.getElementById('serialOut').value;
+			//console.log(serialOutString);
+		var serialOutArray = serialOutString.split(" ");
+			//console.log(serialOutArray[0]);
+		var bufferOut = new Uint8Array(serialOutArray.length);
+
+		for(j = 0; j <serialOutArray.length; j++)
+		{
+
+			bufferOut[j] = parseInt(serialOutArray[j]);
+
+			//console.log(bufferOut[j]);
+		}
+	 		this.transmit(bufferOut);
+
+	    //this.singleBuffer[0] = (d1);
+
+
+	}
 
 
   
@@ -159,6 +260,8 @@
     
     
   };
+
+
   
   
   CTC.prototype.attachEvents = function() 
@@ -178,97 +281,253 @@
     });
 
 
-    self.setupPanelLink.addEventListener('click', function () 
-    {
-    	if(document.getElementById('setup').style.display == "none")
-    	{
-			document.getElementById('setup').style.display = 'block';
-    	}
-    	else
-    	{	
-			document.getElementById('setup').style.display = 'none';
-		}
+ //    self.setupPanelLink.addEventListener('click', function () 
+ //    {
+ //    	if(document.getElementById('setup').style.display == "none")
+ //    	{
+	// 		document.getElementById('setup').style.display = 'block';
+ //    	}
+ //    	else
+ //    	{	
+	// 		document.getElementById('setup').style.display = 'none';
+	// 	}
 		
 		
-	canvasHeight = window.innerHeight - document.getElementById("setup").offsetHeight - document.getElementById("toggle").offsetHeight- document.getElementById("header").offsetHeight -40;
-   	canvasWidth = window.innerWidth - 20;
+	// canvasHeight = window.innerHeight - document.getElementById("setup").offsetHeight - document.getElementById("toggle").offsetHeight- document.getElementById("header").offsetHeight -40;
+ //   	canvasWidth = window.innerWidth - 20;
 	
 	
-    centerY = canvasHeight/2;
-    centerX = canvasWidth/2;
-    document.getElementById("ycenterRange").value =centerY;
-    document.getElementById("xcenterRange").value =centerX;
+ //    centerY = canvasHeight/2;
+ //    centerX = canvasWidth/2;
+ //    document.getElementById("ycenterRange").value =centerY;
+ //    document.getElementById("xcenterRange").value =centerX;
     
-		redrawCanvas();
 
 
-    });
+
+ //    });
     
     
     
-    self.ycenterRange.addEventListener('input', function () 
-    {
-    	console.log(document.getElementById('ycenterRange').value);
-    	centerY = parseInt(document.getElementById('ycenterRange').value);
+  //   self.ycenterRange.addEventListener('input', function () 
+  //   {
+  //   	console.log(document.getElementById('ycenterRange').value);
+  //   	centerY = parseInt(document.getElementById('ycenterRange').value);
 
 	
-		ctx.fillStyle="#FFFFFF";
-		ctx.fillRect(0,0,canvasWidth, canvasHeight);
+		// ctx.fillStyle="#FFFFFF";
+		// ctx.fillRect(0,0,canvasWidth, canvasHeight);
 		
 			
-		draw();
 
 
-    });
+
+  //   });
     
     
-    self.xcenterRange.addEventListener('input', function () 
-    {
-    	centerX = parseInt(document.getElementById('xcenterRange').value);
+  //   self.xcenterRange.addEventListener('input', function () 
+  //   {
+  //   	centerX = parseInt(document.getElementById('xcenterRange').value);
 
 	
-		ctx.fillStyle="#FFFFFF";
-		ctx.fillRect(0,0,canvasWidth, canvasHeight);
+		// ctx.fillStyle="#FFFFFF";
+		// ctx.fillRect(0,0,canvasWidth, canvasHeight);
 		
-		
-			
-		draw();
 
 
-    });
+  //   });
     
     self.clearButton.addEventListener('click', function () 
     {
     	
 		console.log("clear");
-			
-		draw();
+		mainConsole.innerHTML = "";
+
 
 
     });
     
     
-    self.startSweep.addEventListener('click', function () 
+
+    self.sendDataButton.addEventListener('click', function () 
     {
-    
-    	if(scanning == 0)
+    	//console.log(self.dataInType);
+
+    	if(self.dataInType == 0)
     	{
-    		self.startSweep.innerHTML = "Stop Scanning";
-			self.sendCommanderPacket(0,0,0,1);
-			scanning = 1;
+    		//console.log("ASCII");
+    		//self.sendByte(254);
+    		self.sendAscii();
+    	}
+    	else if(self.dataInType == 1)
+    	{
+    		//console.log("Decimal");
+    		//self.sendByte(254);
+    		self.sendDecimal();
+    	}
+    	else if(self.dataInType == 2)
+    	{
+    		//console.log("Hex");
+    		//self.sendByte(254);
+    		self.sendHex();
     	}
     	else
     	{
-    		self.startSweep.innerHTML = "Start Scanning";
-			self.sendCommanderPacket(0,0,0,2);
-			scanning = 0;
-    	
+    		//console.log("noType");
+
     	}
-    	//send '1' extended instruction to start
+    	//self.sendByte(254);
+	});
+
+
+    self.baudSelection.addEventListener('change', function () 
+    {
+      CTC.ArduinoConnection = 
+	  {
+	    bitrate:    parseInt(this.value),
+	    dataBits:   "eight",
+	    parityBit:  "no",
+	    stopBits:   "one"
+	  };	
+
+
+	});
+
+
+
+    self.dataInSelection.addEventListener('change', function () 
+    {
+
+    	if(self.convertInput.checked == true)
+    	{
+			var serialInString = mainConsole.innerHTML;
+			mainConsole.innerHTML = "";
+
+    		if(self.dataInType == 0)
+    		{
+					//console.log(serialOutString);
+				var serialInArray = serialInString.split("");
+    			//check current value of drop down
+    			if(this.value ==1)
+    			{
+					for(j = 0; j <serialInArray.length; j++)
+					{
+						mainConsole.innerHTML = mainConsole.innerHTML + " " + serialInArray[j].charCodeAt().toString(10);
+					}   				
+    			}
+
+    			else if(this.value ==2)
+    			{
+					for(j = 0; j <serialInArray.length; j++)
+					{
+						mainConsole.innerHTML = mainConsole.innerHTML + " 0x" + serialInArray[j].charCodeAt().toString(16);
+					}   		
+    				
+    			}
+
+    		}
+    		else if(self.dataInType == 1)
+    		{
+				var serialInArray = serialInString.trim().split(" ");
+				console.log(serialInString);
+				console.log(serialInArray);
+
+    			if(this.value ==0)
+    			{
+					for(j = 0; j <serialInArray.length; j++)
+					{
+						mainConsole.innerHTML = mainConsole.innerHTML + String.fromCharCode(serialInArray[j]);
+					}   				
+    			}
+
+    			else if(this.value ==2)
+    			{
+					for(j = 0; j <serialInArray.length; j++)
+					{
+						console.log("t");
+						console.log(j);
+						console.log(serialInArray[j]);
+						console.log(serialInArray[j].toString(16));
+
+						mainConsole.innerHTML = mainConsole.innerHTML + " 0x" + parseInt(serialInArray[j]).toString(16);
+					}   		
+    				
+    			}
+
+    		}
+    		else if(self.dataInType == 2)
+    		{
+				var serialInArray = serialInString.trim().split(" ");
+    			if(this.value ==0)
+    			{
+					for(j = 0; j <serialInArray.length; j++)
+					{
+						mainConsole.innerHTML = mainConsole.innerHTML  + String.fromCharCode(serialInArray[j]);
+					}   				
+    			}
+
+    			else if(this.value ==1)
+    			{
+					for(j = 0; j <serialInArray.length; j++)
+					{
+						mainConsole.innerHTML = mainConsole.innerHTML + " " + parseInt(serialInArray[j]).toString(10);
+					}   		
+    				
+    			}
+
+    		}
+
+
+				//mainConsole.innerHTML = mainConsole.innerHTML + " " + serialInBuffer[j].toString(10);
+				//mainConsole.innerHTML = mainConsole.innerHTML + " " + "0x" + serialInBuffer[j].toString(16).toUpperCase();
+
+
+    	}
+
+
+    	self.dataInType = this.value;
+    	console.log(self.dataInType);
+
+    	//if()
+	});
+
+
+    self.dataOutSelection.addEventListener('change', function () 
+    {
+    	self.dataInType = this.value;
+	});
+
+    self.convertInput.addEventListener('change', function () 
+    {
+    	//if( this.value;
+
+	});
+
+
+
+
+
+   //  self.startSweep.addEventListener('click', function () 
+   //  {
+    
+   //  	if(scanning == 0)
+   //  	{
+   //  		self.startSweep.innerHTML = "Stop Scanning";
+			// self.sendCommanderPacket(0,0,0,1);
+			// scanning = 1;
+   //  	}
+   //  	else
+   //  	{
+   //  		self.startSweep.innerHTML = "Start Scanning";
+			// self.sendCommanderPacket(0,0,0,2);
+			// scanning = 0;
+    	
+   //  	}
+   //  	//send '1' extended instruction to start
     	
 
 
-    });
+   //  });
     /*
     
     self.stopSweep.addEventListener('click', function () 
@@ -280,17 +539,17 @@
 
 
     });*/
-    self.servoSpeed.addEventListener('change', function () 
-    {
+  //   self.servoSpeed.addEventListener('change', function () 
+  //   {
     	
-    	//send '3' extended instruction to set speed value from pan bytes
-		console.log("test sevo speed1");	
-		self.sendCommanderPacket(parseInt(self.servoSpeed.value),0,0,3);
-		console.log("test sevo speed");	
-		console.log(self.servoSpeed.value);
+  //   	//send '3' extended instruction to set speed value from pan bytes
+		// console.log("test sevo speed1");	
+		// self.sendCommanderPacket(parseInt(self.servoSpeed.value),0,0,3);
+		// console.log("test sevo speed");	
+		// console.log(self.servoSpeed.value);
 
 
-    });
+  //   });
     
     
     
@@ -303,21 +562,21 @@
     
 
 
-	self.instructionSelection.addEventListener('change', function () 
-	{
-		//clear space		
-		var list = document.getElementsByClassName("inst");
-		for (var i = 0; i < list.length; i++) {
-			 list[i].style.display = "none";
-		}
+	// self.instructionSelection.addEventListener('change', function () 
+	// {
+	// 	//clear space		
+	// 	var list = document.getElementsByClassName("inst");
+	// 	for (var i = 0; i < list.length; i++) {
+	// 		 list[i].style.display = "none";
+	// 	}
 		
-		//show intended part.
-		document.getElementById(document.getElementById('instructionSelection').value).style.display = "block";
+	// 	//show intended part.
+	// 	document.getElementById(document.getElementById('instructionSelection').value).style.display = "block";
 		
 		
 
 		
-	});
+	// });
 
 
 
@@ -373,7 +632,7 @@
 		//ctx.fillStyle="#FFFFFF";
 		//ctx.fillRect(0,0,canvasWidth, canvasHeight);
 		
-		draw();
+
 
  		chrome.serial.onReceive.addListener(readHandler);
 
@@ -472,9 +731,82 @@ var newPacket = 0;
 var serialBuffer = [0];
 var serialIndex = -1;
 var packetsReceived = 0;
+       
+
+
+var readHandler = function(info)
+{
+	var dataInType = document.getElementById('dataIn').value;
+
+		console.log("ASCII in");
+
+	if(dataInType == 0)
+	{
+		//console.log("ASCII in");
+
+		var serialInBuffer = (new Uint8Array(info.data));
+		var mainConsole = document.getElementById("mainConsole");
+
+		for(j = 0; j < serialInBuffer.length; j++)
+		{
+			//	mainConsole.innerHTML = mainConsole.innerHTML + " " + serialInBuffer[j];
+				var tempBuffer =  serialInBuffer[j];
+				var tempoBuffer = "" + serialInBuffer[j] + " ";
+				console.log(tempoBuffer);
+				//mainConsole.innerHTML = mainConsole.innerHTML + " " +  String.valueOf(tempBuffer ) .charCodeAt(0);
+				mainConsole.innerHTML = mainConsole.innerHTML +   String.fromCharCode( serialInBuffer[j]);
+				// /mainConsole.innerHTML = mainConsole.innerHTML + " " +  tempoBuffer.charCodeAt(0);
+
+		}
+
+
+
+
+	}
+	else if(dataInType == 1)
+	{
+		console.log("Decimal in");
+		var serialInBuffer = (new Uint8Array(info.data));
+		var mainConsole = document.getElementById("mainConsole");
+
+		for(j = 0; j < serialInBuffer.length; j++)
+		{
+			//	mainConsole.innerHTML = mainConsole.innerHTML + " " + serialInBuffer[j];
+				mainConsole.innerHTML = mainConsole.innerHTML + " " + serialInBuffer[j].toString(10);
+
+
+		}
+	}
+	else if(dataInType == 2)
+	{
+
+	console.log("Hex in");
+		var serialInBuffer = (new Uint8Array(info.data));
+		var mainConsole = document.getElementById("mainConsole");
+
+		for(j = 0; j < serialInBuffer.length; j++)
+		{
+			//	mainConsole.innerHTML = mainConsole.innerHTML + " " + serialInBuffer[j];
+				mainConsole.innerHTML = mainConsole.innerHTML + " " + "0x" + serialInBuffer[j].toString(16).toUpperCase();
+
+		}
+
+	}
+	else
+	{
+		console.log("noType");
+
+	}
+
+
+
+
+
+
+}
+
         		
-        		
-var readHandler = function(info) 
+var readHandlers = function(info) 
 {
 
 //console.log("Read!");
@@ -671,7 +1003,7 @@ var readHandler = function(info)
 				//if direction has changed, call draw() to clear canvas
 				if (direction != lastDirection)
 				{
-					draw();
+
 				}
 			}			
 			
@@ -703,16 +1035,16 @@ var readHandler = function(info)
 	var ctx;
 	
 	var r = 200.0;
-	var centerX = document.getElementById('xcenterRange').value;
-	var centerY  = document.getElementById('ycenterRange').value;
+	//var centerX = document.getElementById('xcenterRange').value;
+	//var centerY  = document.getElementById('ycenterRange').value;
 	var lastX = 750;
 	var lastY = 750;
 	
-	var canvasHeight = window.innerHeight - document.getElementById("setup").offsetHeight - document.getElementById("toggle").offsetHeight- document.getElementById("header").offsetHeight -40;
+	//var canvasHeight = window.innerHeight - document.getElementById("setup").offsetHeight - document.getElementById("toggle").offsetHeight- document.getElementById("header").offsetHeight -40;
    
-	var canvasWidth = window.innerWidth - 20;
+	//var canvasWidth = window.innerWidth - 20;
 	
-	var scanning = 0;    
+	//var scanning = 0;    
    
 function drawPoint(degree, distance)
 {
@@ -795,59 +1127,35 @@ function toRadians (angle) {
 
 
 
-/*
-document.addEventListener('DOMContentLoaded', function () {
-  draw();
-  
-	//drawPoint(45, 200);
-  
-  
-  //drawPoint(135, 200);
-  //drawPoint(225, 350);
-  //drawPoint(315, 500);
-  
-});
-*/
-
 
 
 window.onload =  function() {
 
-	redrawCanvas();
-    centerY = canvasHeight/2;
-    centerX = canvasWidth/2;
-    document.getElementById("ycenterRange").value =centerY;
-    document.getElementById("xcenterRange").value =centerX;
+
+	mainConsole = document.getElementById("mainConsole");
+    terminalWidth = window.innerWidth - 20;
+    terminalHeight = window.innerHeight - document.getElementById("setup").offsetHeight - document.getElementById("packetContainer").offsetHeight- document.getElementById("header").offsetHeight -40;
+    mainConsole.style.width = terminalWidth + "px";
+    mainConsole.style.height = terminalHeight + "px";
 
 
     
 }
  window.onresize = function() {
-redrawCanvas();
+ 	redrawTerminal();
+
+
 }
 
-function redrawCanvas()
+function redrawTerminal()
 {
 
-    //canvas = document.getElementById("canvasRoom");
-    canvasWidth = window.innerWidth - 20;
-    canvasHeight = window.innerHeight - document.getElementById("setup").offsetHeight - document.getElementById("toggle").offsetHeight- document.getElementById("header").offsetHeight -40;
-    
-    
-    console.log(document.getElementById("setup").offsetHeight);
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    
-    centerY = canvasHeight/2;
-    centerX = canvasWidth/2;
-    document.getElementById("ycenterRange").max =canvasHeight;
-    document.getElementById("xcenterRange").max =canvasWidth;
-    
-    
-    
-    //ctx = canvas.getContext("2d");
+	mainConsole = document.getElementById("mainConsole");
+    terminalWidth = window.innerWidth - 20;
+    terminalHeight = window.innerHeight - document.getElementById("setup").offsetHeight - document.getElementById("packetContainer").offsetHeight - document.getElementById("header").offsetHeight  -40;
+    mainConsole.style.width = terminalWidth + "px";
+    mainConsole.style.height = terminalHeight + "px";
 
-    draw();
     
 }
 
